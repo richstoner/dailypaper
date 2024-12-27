@@ -5,18 +5,6 @@ on:
     - cron: "0 0 * * *"  # Run daily at midnight UTC
   workflow_dispatch:  # Allow manual trigger
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
-
-
 jobs:
   update-root:
     runs-on: ubuntu-latest
@@ -31,7 +19,6 @@ jobs:
         run: |
           TODAY=$(date -u +"%Y-%m-%d")
           echo "dir=dynamic-content-2025/$TODAY" >> $GITHUB_ENV
-
       # Step 3: Debug directory structure (Optional, for troubleshooting)
       # - name: Debug Directory Structure
       #   run: |
@@ -49,19 +36,16 @@ jobs:
           else
             echo "Source directory ${{ env.dir }} exists. Proceeding..."
           fi
-
       # Step 5: Prepare the public directory
       - name: Prepare Public Directory
         run: |
           mkdir -p docs  # Create the directory if it doesn't exist
           rm -rf docs/*  # Remove existing content
-
       # Step 6: Copy files from the selected directory to public
       - name: Copy Files to docs Directory
         run: |
           echo "Copying files from ${{ env.dir }} to docs/"
           cp -r ${{ env.dir }}/* docs/
-
       # Step 7: Commit and Push Changes
       - name: Commit and Push Changes
         run: |
@@ -72,25 +56,3 @@ jobs:
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-# Single deploy job since we're just deploying
-  deploy:
-    needs: update-root
-
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          # Upload entire repository
-          path: './docs'
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4          
