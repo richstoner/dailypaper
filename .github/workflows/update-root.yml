@@ -2,8 +2,7 @@ name: Update Root Directory
 
 on:
   schedule:
-    # Run daily at midnight UTC
-    - cron: "0 0 * * *"
+    - cron: "0 0 * * *"  # Run daily at midnight UTC
   workflow_dispatch:  # Allow manual trigger
 
 jobs:
@@ -11,27 +10,43 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 2: Determine today's date and corresponding directory
       - name: Determine Today's Directory
         run: |
           TODAY=$(date -u +"%Y-%m-%d")
           echo "dir=dynamic-content-2025/$TODAY" >> $GITHUB_ENV
 
-      # Step 3: Copy content to the public (root) directory
-      - name: Update Root Directory
+      - name: Debug Directory Structure
         run: |
-          echo "Selected source directory: ${{ env.dir }}"
-          rm -rf public/*  # Clear existing root content
+          echo "Current directory:"
+          pwd
+          echo "Contents of repository:"
+          ls -R
+
+      - name: Verify Source Directory
+        run: |
+          if [ ! -d "${{ env.dir }}" ]; then
+            echo "Error: Source directory ${{ env.dir }} does not exist!"
+            exit 1
+          else
+            echo "Source directory ${{ env.dir }} exists. Proceeding..."
+          fi
+
+      - name: Prepare Public Directory
+        run: |
+          mkdir -p public  # Create the directory if it doesn't exist
+          rm -rf public/*  # Remove existing content
+
+      - name: Copy Files to Public Directory
+        run: |
+          echo "Copying files from ${{ env.dir }} to public/"
           cp -r ${{ env.dir }}/* public/
 
-      # Step 4: Commit and push changes
       - name: Commit and Push Changes
         uses: ad-m/github-push-action@v0.6.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: main  # Replace with your Cloudflare Pages branch
+          branch: main  # Replace with your branch name
           force: true
