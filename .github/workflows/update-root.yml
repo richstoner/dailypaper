@@ -18,12 +18,13 @@ jobs:
       # Step 2: Determine today's date and corresponding directory
       - name: Determine Today's Directory
         run: |
-          python -c "
+          python3 <<EOF
 import datetime
 today = datetime.datetime.utcnow().date()
 folder_name = today.strftime('%Y-%m-%d')
-print(f'dir=dynamic-content-2025/{folder_name}')
-" >> $GITHUB_ENV
+with open("${GITHUB_ENV}", "a") as env_file:
+    env_file.write(f"dir=dynamic-content-2025/{folder_name}\n")
+EOF
 
       # Step 3: Copy content to the public (root) directory
       - name: Update Root Directory
