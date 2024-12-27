@@ -1,4 +1,4 @@
-name: Update Root Directory
+name: Dynamic Update Docs
 
 on:
   schedule:
