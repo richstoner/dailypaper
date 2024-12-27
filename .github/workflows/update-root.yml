@@ -1,0 +1,42 @@
+name: Update Root Directory
+
+on:
+  schedule:
+    # Run daily at midnight UTC
+    - cron: "0 0 * * *"
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  update-root:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Step 2: Determine today's date and corresponding directory
+      - name: Determine Today's Directory
+        id: select-dir
+        run: |
+          python -c "
+import datetime
+today = datetime.datetime.utcnow().date()
+folder_name = today.strftime('%Y-%m-%d')
+print(f'::set-output name=dir::dynamic-content-2025/{folder_name}')
+"
+      
+      # Step 3: Copy content to the public (root) directory
+      - name: Update Root Directory
+        run: |
+          echo "Selected source directory: ${{ steps.select-dir.outputs.dir }}"
+          rm -rf public/*  # Clear existing root content
+          cp -r ${{ steps.select-dir.outputs.dir }}/* public/
+
+      # Step 4: Commit and push changes
+      - name: Commit and Push Changes
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main  # Replace with your Cloudflare Pages branch
+          force: true
