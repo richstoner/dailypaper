@@ -41,22 +41,22 @@ jobs:
       # Step 5: Prepare the public directory
       - name: Prepare Public Directory
         run: |
-          mkdir -p public  # Create the directory if it doesn't exist
-          rm -rf public/*  # Remove existing content
+          mkdir -p docs  # Create the directory if it doesn't exist
+          rm -rf docs/*  # Remove existing content
 
       # Step 6: Copy files from the selected directory to public
-      - name: Copy Files to Public Directory
+      - name: Copy Files to docs Directory
         run: |
-          echo "Copying files from ${{ env.dir }} to public/"
-          cp -r ${{ env.dir }}/* public/
+          echo "Copying files from ${{ env.dir }} to docs/"
+          cp -r ${{ env.dir }}/* docs/
 
       # Step 7: Commit and Push Changes
       - name: Commit and Push Changes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add public/*
-          git commit -m "Update public directory with content from ${{ env.dir }}"
+          git add docs/*
+          git commit -m "Update docs directory with content from ${{ env.dir }}"
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
