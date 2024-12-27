@@ -17,21 +17,20 @@ jobs:
 
       # Step 2: Determine today's date and corresponding directory
       - name: Determine Today's Directory
-        id: select-dir
         run: |
           python -c "
 import datetime
 today = datetime.datetime.utcnow().date()
 folder_name = today.strftime('%Y-%m-%d')
-print(f'::set-output name=dir::dynamic-content-2025/{folder_name}')
-"
-      
+print(f'dir=dynamic-content-2025/{folder_name}')
+" >> $GITHUB_ENV
+
       # Step 3: Copy content to the public (root) directory
       - name: Update Root Directory
         run: |
-          echo "Selected source directory: ${{ steps.select-dir.outputs.dir }}"
+          echo "Selected source directory: ${{ env.dir }}"
           rm -rf public/*  # Clear existing root content
-          cp -r ${{ steps.select-dir.outputs.dir }}/* public/
+          cp -r ${{ env.dir }}/* public/
 
       # Step 4: Commit and push changes
       - name: Commit and Push Changes
